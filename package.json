@@ -1,0 +1,21 @@
+{
+  "name": "lambda-reuse-test-cases",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "int-dev": "env TEST_MODE=handler ./node_modules/.bin/mocha tests/test_cases --reporter spec",
+    "acceptance-dev": "env TEST_MODE=http ./node_modules/.bin/mocha tests/test_cases --reporter spec"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "bluebird": "^3.5.0",
+    "chai": "^4.1.1",
+    "co": "^4.6.0",
+    "lodash": "^4.17.4",
+    "mocha": "^3.5.0",
+    "superagent": "^3.5.2",
+    "superagent-promise": "^1.1.0"
+  }
+}
