@@ -1,74 +1,60 @@
-'use strict';
+const APP_ROOT = '../../'
 
-const APP_ROOT = '../../';
+const _       = require('lodash')
+const Promise = require("bluebird")
+const http    = require('superagent-promise')(require('superagent'), Promise)
+const mode    = process.env.TEST_MODE
 
-const _       = require('lodash');
-const co      = require('co');
-const Promise = require("bluebird");
-const http    = require('superagent-promise')(require('superagent'), Promise);
-const mode    = process.env.TEST_MODE;
-
-let respondFrom = function (httpRes) {
+const respondFrom = function (httpRes) {
   return { 
     statusCode: httpRes.status,
     body: httpRes.body,
     headers: httpRes.headers
-  };
+  }
 }
 
-let viaHttpGet = co.wrap(function* (relPath) {
-  let root = process.env.TEST_ROOT;
-  let url = `${root}/${relPath}`;
-  console.log(`executing via HTTP GET: ${url}`);
+const viaHttpGet = async (relPath) => {
+  const root = process.env.TEST_ROOT;
+  const url = `${root}/${relPath}`;
+  console.log(`executing via HTTP GET: ${url}`)
 
   try {
-    let res = yield http.get(url);
-    return respondFrom(res);
+    const res = await http.get(url)
+    return respondFrom(res)
   } catch (err) {
     if (err.status) {
       return {
         statusCode: err.status,
         headers: err.response.headers
-      };
+      }
     } else {
-      throw err;
+      throw err
     }
   }
-});
+}
 
-let viaHandler = (funcName, event) => {
-  console.log('executing by invoking handler directly');
+const viaHandler = async (funcName, event) => {
+  console.log('executing by invoking handler directly')
 
-  let handler = require(`${APP_ROOT}/functions/${funcName}`).handler; 
+  const handler = require(`${APP_ROOT}/functions/${funcName}`).handler
+  const response = await handler(event, {})
+  const contentType = _.get(response, 'headers.Content-Type', 'application/json')
+  if (response.body && contentType === 'application/json') {
+    response.body = JSON.parse(response.body);
+  }
 
-  return new Promise((resolve, reject) => {
-    let context = {};
-    let callback = function (err, response) {
-      if (err) {
-        reject(err);
-      } else {
-        let contentType = _.get(response, 'headers.Content-Type', 'application/json');
-        if (response.body && contentType === 'application/json') {
-          response.body = JSON.parse(response.body);
-        }
+  return response
+}
 
-        resolve(response);
-      }
-    };
-
-    handler(event, context, callback);
-  });
-};
-
-let we_invoke_get = co.wrap(function* () {
+const we_invoke_get = async () => {
   let res = 
     mode === 'handler' 
-      ? yield viaHandler('get', {})
-      : yield viaHttpGet('');
+      ? await viaHandler('get', {})
+      : await viaHttpGet('')
 
-  return res;
-});
+  return res
+}
 
 module.exports = {
   we_invoke_get
-};
+}
