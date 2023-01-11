@@ -13,7 +13,7 @@
     "bluebird": "^3.5.0",
     "chai": "^4.1.1",
     "lodash": "^4.17.4",
-    "mocha": "^3.5.0",
+    "mocha": "^10.2.0",
     "superagent": "^3.5.2",
     "superagent-promise": "^1.1.0"
   }
